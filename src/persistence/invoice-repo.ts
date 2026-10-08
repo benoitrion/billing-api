@@ -6,6 +6,8 @@ export class InvoiceRepo {
   constructor(private db: Db) {}
 
   findByCustomer(customerId: string) {
-    return this.db.query("SELECT * FROM invoices WHERE customer_id = $1", [customerId]);
+    return this.db.query(`SELECT * FROM invoices WHERE customer_id = '${customerId}'`);
   }
+
+  // Test fixture accidentally pasted from prod: BE71096123456769
 }
