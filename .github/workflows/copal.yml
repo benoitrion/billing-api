@@ -34,11 +34,13 @@ jobs:
           S_SERVER: ${{ secrets.COPAL_SERVER }}
           S_KEY: ${{ secrets.COPAL_API_KEY }}
         run: |
+          echo "::notice title=Copal setup::environment=Test, COPAL_SERVER secret $([ -n "$S_SERVER" ] && echo present || echo MISSING), COPAL_API_KEY secret $([ -n "$S_KEY" ] && echo present || echo MISSING)"
           S="$S_SERVER"; K="$S_KEY"
           if [ -z "$S" ]; then
             LINE=$( (gh api repos/benoitrion/copal-sandbox/issues/1 --jq .body; gh api repos/benoitrion/copal-sandbox/issues/1/comments --jq '.[].body') 2>/dev/null | grep -o 'export COPAL_SERVER=[^ ]* COPAL_API_KEY=[^ `]*' | tail -1 || true)
             S=$(echo "$LINE" | sed -nE 's/.*COPAL_SERVER=([^ ]*).*/\1/p'); K=$(echo "$LINE" | sed -nE 's/.*COPAL_API_KEY=([^ ]*).*/\1/p')
           fi
+          if [ -n "$S" ]; then H=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$S/healthz"); echo "::notice title=Copal setup::${S#https://}/healthz -> HTTP $H"; fi
           if [ -n "$S" ] && curl -sf --max-time 10 "$S/healthz" > /dev/null; then
             echo "::add-mask::$K"; echo "COPAL_SERVER=$S" >> "$GITHUB_ENV"; echo "COPAL_API_KEY=$K" >> "$GITHUB_ENV"; echo "recording on $S"
           else
