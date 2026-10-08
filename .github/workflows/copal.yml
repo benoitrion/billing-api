@@ -1,0 +1,48 @@
+# Copal PR check: commit status `copal/check` + a review with inline findings, using this job's own token.
+# The check is recorded in a Copal console when COPAL_SERVER / COPAL_API_KEY are set as repository secrets;
+# without them it uses the latest demo server posted in benoitrion/copal-sandbox issue #1.
+name: copal
+on:
+  pull_request:
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+  issues: read
+
+jobs:
+  copal:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get the Copal engine (pinned)
+        uses: actions/checkout@v4
+        with:
+          repository: benoitrion/copal-sandbox
+          ref: 512a4bd12edfd4db1124f623069858ab44fcb9ac
+          path: .copal
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund && npm run build
+        working-directory: .copal
+      - name: Resolve the Copal server
+        env:
+          GH_TOKEN: ${{ github.token }}
+          S_SERVER: ${{ secrets.COPAL_SERVER }}
+          S_KEY: ${{ secrets.COPAL_API_KEY }}
+        run: |
+          S="$S_SERVER"; K="$S_KEY"
+          if [ -z "$S" ]; then
+            LINE=$( (gh api repos/benoitrion/copal-sandbox/issues/1 --jq .body; gh api repos/benoitrion/copal-sandbox/issues/1/comments --jq '.[].body') 2>/dev/null | grep -o 'export COPAL_SERVER=[^ ]* COPAL_API_KEY=[^ `]*' | tail -1 || true)
+            S=$(echo "$LINE" | sed -nE 's/.*COPAL_SERVER=([^ ]*).*/\1/p'); K=$(echo "$LINE" | sed -nE 's/.*COPAL_API_KEY=([^ ]*).*/\1/p')
+          fi
+          if [ -n "$S" ] && curl -sf --max-time 10 "$S/healthz" > /dev/null; then
+            echo "::add-mask::$K"; echo "COPAL_SERVER=$S" >> "$GITHUB_ENV"; echo "COPAL_API_KEY=$K" >> "$GITHUB_ENV"; echo "recording on $S"
+          else
+            echo "COPAL_SERVER=" >> "$GITHUB_ENV"; echo "no reachable Copal server: local engine, not recorded"
+          fi
+      - name: Copal check
+        run: node .copal/packages/git-app/dist/src/action.js
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
