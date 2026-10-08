@@ -4,15 +4,21 @@
 name: copal
 on:
   pull_request:
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
 
 permissions:
   contents: read
   pull-requests: write
   statuses: write
-  issues: read
+  issues: write
 
 jobs:
   copal:
+    # comments: only PR comments holding a /copal command start a runner
+    if: github.event_name == 'pull_request' || (contains(github.event.comment.body, '/copal') && (github.event.issue.pull_request || github.event.pull_request))
     runs-on: ubuntu-latest
     # COPAL_SERVER / COPAL_API_KEY are environment secrets of "Test"
     environment: Test
@@ -21,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: benoitrion/copal-sandbox
-          ref: 891a03c4a84737f664ef6b82ded73051e8034503
+          ref: 4fbf4f5fb7f602c9229823fef13b656bff9999d6
           path: .copal
       - uses: actions/setup-node@v4
         with:
