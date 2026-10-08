@@ -1,5 +1,5 @@
 # Copal PR check: commit status `copal/check` + a review with inline findings, using this job's own token.
-# The check is recorded in a Copal console when COPAL_SERVER / COPAL_API_KEY are set as repository secrets;
+# The check is recorded in a Copal console when COPAL_SERVER / COPAL_API_KEY are set (secrets of the Test environment);
 # without them it uses the latest demo server posted in benoitrion/copal-sandbox issue #1.
 name: copal
 on:
@@ -14,6 +14,8 @@ permissions:
 jobs:
   copal:
     runs-on: ubuntu-latest
+    # COPAL_SERVER / COPAL_API_KEY are environment secrets of "Test"
+    environment: Test
     steps:
       - name: Get the Copal engine (pinned)
         uses: actions/checkout@v4
