@@ -21,7 +21,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: benoitrion/copal-sandbox
-          ref: 891a03c4a84737f664ef6b82ded73051e8034503
+          ref: 82e2cd799234bb6919e8cf029806b0f2639ed686
           path: .copal
       - uses: actions/setup-node@v4
         with:
