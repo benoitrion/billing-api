@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: benoitrion/copal-sandbox
-          ref: 4fbf4f5fb7f602c9229823fef13b656bff9999d6
+          ref: 28a06ab3da81a5e2966aaacbdc9716f1abbaaf5b
           path: .copal
       - uses: actions/setup-node@v4
         with:
@@ -56,3 +56,9 @@ jobs:
         run: node .copal/packages/git-app/dist/src/action.js
         env:
           GITHUB_TOKEN: ${{ github.token }}
+      - name: Agent instruction files in sync with .copalrules
+        if: github.event_name == 'pull_request'
+        run: |
+          git clone -q --depth 1 --branch "$GITHUB_HEAD_REF" "https://x-access-token:${{ github.token }}@github.com/${{ github.event.pull_request.head.repo.full_name }}.git" repo
+          cd repo && node ../.copal/packages/cli/dist/src/index.js sync-context --check \
+            || echo "::warning title=Copal::CLAUDE.md / AGENTS.md / Cursor / Copilot instructions are out of date with .copalrules — run \`copal sync-context\` and commit"
