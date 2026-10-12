@@ -1,4 +1,5 @@
+import { Currency, LedgerPort } from "../ports/ledger-port";
+
 export function withVat(amount: number, rate: number): number {
-  const v = amount * (1 + rate);
-  return Math.round(v * 100) / 100;
+  return LedgerPort.round(amount * (1 + rate), Currency.EUR);
 }
