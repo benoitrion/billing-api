@@ -1,64 +1,31 @@
-# Copal PR check: commit status `copal/check` + a review with inline findings, using this job's own token.
-# The check is recorded in a Copal console when COPAL_SERVER / COPAL_API_KEY are set (secrets of the Test environment);
-# without them it uses the latest demo server posted in benoitrion/copal-sandbox issue #1.
+# Copal in this repository's own CI: questions and a reviewer guide on each pull request,
+# a weekly team report every Monday, and the readiness diagnostic on demand (Actions › copal › Run workflow).
 name: copal
 on:
   pull_request:
+    types: [opened, synchronize, reopened]
   issue_comment:
     types: [created]
-  pull_request_review_comment:
-    types: [created]
+  schedule:
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      mode: { description: "weekly or readiness", default: readiness }
 
 permissions:
   contents: read
+  issues: write
   pull-requests: write
   statuses: write
-  issues: write
 
 jobs:
   copal:
-    # comments: only PR comments holding a /copal command start a runner
-    if: github.event_name == 'pull_request' || (contains(github.event.comment.body, '/copal') && (github.event.issue.pull_request || github.event.pull_request))
     runs-on: ubuntu-latest
-    # COPAL_SERVER / COPAL_API_KEY are environment secrets of "Test"
-    environment: Test
     steps:
-      - name: Get the Copal engine (pinned)
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: benoitrion/copal-sandbox/actions/program@main
         with:
-          repository: benoitrion/copal-sandbox
-          ref: 28a06ab3da81a5e2966aaacbdc9716f1abbaaf5b
-          path: .copal
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - run: npm install --no-audit --no-fund && npm run build
-        working-directory: .copal
-      - name: Resolve the Copal server
+          mode: ${{ inputs.mode || 'auto' }}
+          track: legacy
         env:
-          GH_TOKEN: ${{ github.token }}
-          S_SERVER: ${{ secrets.COPAL_SERVER }}
-          S_KEY: ${{ secrets.COPAL_API_KEY }}
-        run: |
-          echo "::notice title=Copal setup::environment=Test, COPAL_SERVER secret $([ -n "$S_SERVER" ] && echo present || echo MISSING), COPAL_API_KEY secret $([ -n "$S_KEY" ] && echo present || echo MISSING)"
-          S="$S_SERVER"; K="$S_KEY"
-          if [ -z "$S" ]; then
-            LINE=$( (gh api repos/benoitrion/copal-sandbox/issues/1 --jq .body; gh api repos/benoitrion/copal-sandbox/issues/1/comments --jq '.[].body') 2>/dev/null | grep -o 'export COPAL_SERVER=[^ ]* COPAL_API_KEY=[^ `]*' | tail -1 || true)
-            S=$(echo "$LINE" | sed -nE 's/.*COPAL_SERVER=([^ ]*).*/\1/p'); K=$(echo "$LINE" | sed -nE 's/.*COPAL_API_KEY=([^ ]*).*/\1/p')
-          fi
-          if [ -n "$S" ]; then H=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$S/healthz"); echo "::notice title=Copal setup::${S#https://}/healthz -> HTTP $H"; fi
-          if [ -n "$S" ] && curl -sf --max-time 10 "$S/healthz" > /dev/null; then
-            echo "::add-mask::$K"; echo "COPAL_SERVER=$S" >> "$GITHUB_ENV"; echo "COPAL_API_KEY=$K" >> "$GITHUB_ENV"; echo "recording on $S"
-          else
-            echo "COPAL_SERVER=" >> "$GITHUB_ENV"; echo "no reachable Copal server: local engine, not recorded"
-          fi
-      - name: Copal check
-        run: node .copal/packages/git-app/dist/src/action.js
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-      - name: Agent instruction files in sync with .copalrules
-        if: github.event_name == 'pull_request'
-        run: |
-          git clone -q --depth 1 --branch "$GITHUB_HEAD_REF" "https://x-access-token:${{ github.token }}@github.com/${{ github.event.pull_request.head.repo.full_name }}.git" repo
-          cd repo && node ../.copal/packages/cli/dist/src/index.js sync-context --check \
-            || echo "::warning title=Copal::CLAUDE.md / AGENTS.md / Cursor / Copilot instructions are out of date with .copalrules — run \`copal sync-context\` and commit"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,42 +1,14 @@
-# billing-api
+# billing-api: a Copal showcase
 
-Test application for [Copal](https://github.com/benoitrion/copal-sandbox): a small invoicing API whose engineering policy lives in [`.copalrules`](.copalrules).
+A small invoicing service, invented for demonstrating [Copal](https://copal.benoitrion.workers.dev). Its history tells a familiar story:
 
-```bash
-npm install && npm start      # http://localhost:3000/health · /customers/c-42/invoices · POST /invoices/preview
-```
+1. **AI slop.** The team adopts AI assistants and merges large, untested, wide changes without review: duplicated rounding, a controller reaching into the database, an unapproved dependency, leftover TODOs.
+2. **Coached.** Copal is added. The next changes are small, start from tests, and stay in one module.
 
-## What Copal checks here
+Try it:
 
-| Rule | Mode | Meaning |
-|---|---|---|
-| `ui-no-persistence` | enforce | `src/web/**` must not import `src/persistence/**` |
-| `ledger-rounding` | enforce | money is rounded through `LedgerPort.round`, never inline (with an automatic correction) |
-| `approved-dependencies` | enforce | only reviewed packages in `package.json` |
-| `hardcoded-credentials`, `sql-injection` | enforce | built-in security pack |
-| `invoice-contract-test` | audit (enforce in CI) | changes to `src/invoice/*.ts` come with their test |
+- **Public diagnostic:** paste `benoitrion/billing-api` on the [diagnostic page](https://copal.benoitrion.workers.dev/readiness.html).
+- **Copal on a pull request:** open the latest open pull request to see Copal's questions and reviewer guide.
+- **Team report:** see the issues labelled `copal-report`, or run *Actions › copal › Run workflow*.
 
-## Pull requests
-
-Every pull request runs the `copal` workflow: a `copal/check` commit status plus a review with inline findings. Make `copal/check` a required status check in branch protection to block merges.
-
-The `scenario/*` branches each carry one typical AI-assisted change; open a PR from any of them to see the check:
-
-| Branch | Expected |
-|---|---|
-| `scenario/01-invoice-rounding` | blocked: inline rounding (with suggested fix) + hard-coded AWS key + missing test |
-| `scenario/02-ui-to-db` | blocked: controller imports persistence; audit: `console.log`, `any` |
-| `scenario/03-sql-and-deps` | blocked: SQL injection, unapproved dependencies, customer IBAN |
-| `scenario/05-feature-done-right` | passes: same feature through `LedgerPort`, test updated |
-
-## Pre-commit hook
-
-From a clone of [copal-sandbox](https://github.com/benoitrion/copal-sandbox) (`npm install && npm run build`):
-
-```bash
-COPAL=/path/to/copal-sandbox/packages/cli/dist/src/index.js
-node $COPAL login --server <copal-server-url> --key <api-key>   # once; key stays in ~/.copal, never in the repo
-cd billing-api && node $COPAL hook install
-```
-
-Commits that break an enforce rule are blocked locally; `node $COPAL check --fix` applies suggested corrections.
+Everything here is fictional demo code.
