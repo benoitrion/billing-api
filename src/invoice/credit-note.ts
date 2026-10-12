@@ -144,3 +144,7 @@ export function creditNoteFor_23(original: any): any {
 export function creditNoteFor_24(original: any): any {
   return createCreditNote(original, "partial");
 }
+
+export function creditNoteTotal(note: any): number {
+  return -Math.abs(Math.round(note.amount * 100) / 100);
+}
