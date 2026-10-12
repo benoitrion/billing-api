@@ -1,0 +1,22 @@
+export const LABEL_EUR = "EUR";
+export const LABEL_USD = "USD";
+export const LABEL_GBP = "GBP";
+export const LABEL_CHF = "CHF";
+export const LABEL_SEK = "SEK";
+export const LABEL_NOK = "NOK";
+export const LABEL_DKK = "DKK";
+export const LABEL_PLN = "PLN";
+export const LABEL_CZK = "CZK";
+export const LABEL_HUF = "HUF";
+export const LABEL_RON = "RON";
+export const LABEL_BGN = "BGN";
+export const LABEL_JPY = "JPY";
+export const LABEL_CAD = "CAD";
+export const LABEL_AUD = "AUD";
+export const LABEL_NZD = "NZD";
+export const LABEL_SGD = "SGD";
+export const LABEL_HKD = "HKD";
+export const LABEL_CNY = "CNY";
+export const LABEL_INR = "INR";
+
+export const ALL: any[] = [LABEL_EUR, LABEL_USD, LABEL_GBP, LABEL_CHF, LABEL_SEK, LABEL_NOK, LABEL_DKK, LABEL_PLN, LABEL_CZK, LABEL_HUF, LABEL_RON, LABEL_BGN, LABEL_JPY, LABEL_CAD, LABEL_AUD, LABEL_NZD, LABEL_SGD, LABEL_HKD, LABEL_CNY, LABEL_INR];
