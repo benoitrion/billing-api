@@ -4,6 +4,16 @@
   "postCreateCommand": "npm install --no-audit --no-fund && bash .devcontainer/get-copal.sh",
   "postAttachCommand": "code --install-extension /tmp/copal-vscode.vsix --force || true",
   "customizations": {
-    "codespaces": { "openFiles": ["src/invoice/vat.ts", "README.md"] }
+    "codespaces": {
+      "openFiles": [
+        "src/invoice/vat.ts",
+        "README.md"
+      ]
+    },
+    "vscode": {
+      "extensions": [
+        "GitHub.copilot-chat"
+      ]
+    }
   }
 }
