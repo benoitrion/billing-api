@@ -52,3 +52,8 @@ rules:
     why: "Billing rules are only as safe as the examples that pin them down."
     coach:
       question: "Which example proves this change is right — is it a test yet?"
+
+# Pass/fail on what a change introduces (shown on every pull request).
+gate:
+  maxNew: { high: 0 }
+  requireTests: true
