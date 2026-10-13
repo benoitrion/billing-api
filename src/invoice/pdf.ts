@@ -189,3 +189,8 @@ export function renderInvoiceHtml(invoice: any): string {
     <p>Total: ${total} EUR</p>
   </body></html>`;
 }
+
+// Agent: show the late fee on the invoice
+export function lateFeeLine(fee: number): string {
+  return `<p class="late-fee">Late fee: ${Math.round(fee * 100) / 100} EUR</p>`;
+}
