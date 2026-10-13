@@ -13,7 +13,10 @@
     "vscode": {
       "extensions": [
         "GitHub.copilot-chat"
-      ]
+      ],
+      "settings": {
+        "copal.hints": "all"
+      }
     }
   }
 }
